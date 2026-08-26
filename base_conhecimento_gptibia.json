@@ -1,0 +1,382 @@
+[
+  {
+    "titulo": "Tibia Rules and Code of Conduct",
+    "autor": "CipSoft GmbH",
+    "ano": 2024,
+    "url_pdf": "https://static.tibia.com/documents/tibiarules.pdf",
+    "resumo": "Documento oficial contendo o regulamento e as regras de conduta do jogo Tibia, detalhando proibições de trapaças (Rule 3b), uso de macros/softwares não oficiais, segurança de contas e políticas de Fair Play.",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["regras_oficiais", "seguranca", "fair_play"],
+      "nivel": "basico",
+      "idioma": "en",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "regulamento",
+      "fonte": "tibia.com",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "Tibia Cyclopedia: Bestiary and Charm Points System Manual",
+    "autor": "Tibia Community Guides",
+    "ano": 2023,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/bestiary_charms_guide.pdf",
+    "resumo": "Manual técnico detalhado sobre o sistema de Bestiário e Charm Points do Tibia, explicando a contagem de abates necessários, categorias de criaturas e efeitos de cada Charm ofensivo e defensivo (Zap, Freeze, Wound, Poison, Enflame, Dodge e Parry).",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["bestiario", "charm_points", "mecanicas_avancadas"],
+      "nivel": "intermediario",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "manual",
+      "fonte": "tibiawiki.com.br",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "Guia Completo de Imbuements: Criaturas, Produtos e Slots",
+    "autor": "TibiaWiki Brasil",
+    "ano": 2023,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/imbuing_system_guide.pdf",
+    "resumo": "Compêndio de todos os tipos de imbuements disponíveis no jogo (Intricate e Powerful), listando os produtos de criaturas necessários (Vampire Teeth, Bloody Pincers, Cultish Robes, Protective Charms, etc.), custos em gold/tokens e equipamentos compatíveis.",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["imbuements", "equipamentos", "crafting"],
+      "nivel": "intermediario",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "guia",
+      "fonte": "tibiawiki.com.br",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "Matriz de Dano Elemental e Fraquezas de Criaturas do Tibia",
+    "autor": "TibiaQA & Analytics Team",
+    "ano": 2024,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/elemental_damage_matrix.pdf",
+    "resumo": "Tabela de referência cruzada contendo os modificadores de dano elemental (Físico, Fogo, Gelo, Terra, Energia, Sagrado e Morte) de mais de 800 criaturas, permitindo ao agente calcular fraquezas ideais para cada local de caça.",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["dano_elemental", "bestiario", "fraquezas"],
+      "nivel": "avancado",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "tabela",
+      "fonte": "tibiaqa.com",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "The Desert Dungeon Quest (10k Quest) Walkthrough and Mechanics",
+    "autor": "Tibia Library Project",
+    "ano": 2022,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/desert_dungeon_quest.pdf",
+    "resumo": "Guia passo a passo da clássica Desert Quest para jogadores de level 20, contendo mapas da caverna de Jakundaf, itens de sacrifício por vocação (Sword, Crossbow, Spellbook e Apple) e coordenadas das alavancas de teleporte.",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["quests", "iniciantes", "desert_quest"],
+      "nivel": "basico",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "guia",
+      "fonte": "tibiawiki.com.br",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "Pits of Inferno (PoI) Quest: Comprehensive Seals and Thrones Guide",
+    "autor": "Tibia Guilds Alliance",
+    "ano": 2023,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/pits_of_inferno_guide.pdf",
+    "resumo": "Documentação detalhada da quest Pits of Inferno, incluindo o mapa dos atalhos, pré-requisitos de alavancas, mecânicas dos 7 selos (Verminor, Infernatil, Tafariel, etc.), rotas de sobrevivência e táticas para caçar na área dos tronos.",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["quests", "pits_of_inferno", "bosses"],
+      "nivel": "avancado",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "guia",
+      "fonte": "tibiawiki.com.br",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "The Inquisition Quest & Blessings Master Guide",
+    "autor": "TibiaWiki Community",
+    "ano": 2023,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/inquisition_quest_guide.pdf",
+    "resumo": "Guia de missões da Inquisição e do NPC Henricus em Thais, abordando a purificação de ninhos de vampiros, resolução de mistérios nos portais do submundo, estratégias contra os Shadow Nexus e desbloqueio do sistema de bênção única (Heart of the Mountain).",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["quests", "inquisition", "blessings"],
+      "nivel": "avancado",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "guia",
+      "fonte": "tibiawiki.com.br",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "The Postman Missions Quest: Postal Service Privileges Guide",
+    "autor": "Tibia Walkthroughs",
+    "ano": 2022,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/postman_quest_guide.pdf",
+    "resumo": "Instruções completas para as missões da guilda dos carteiros (Postman), ensinando como obter desconto definitivo em passagens de barco/tapete, acesso a caixas de correio exclusivas em hunts (Mailboxes) e uso do parcel transport.",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["quests", "utilidades", "postman"],
+      "nivel": "basico",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "guia",
+      "fonte": "tibiawiki.com.br",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "The Annihilator Quest: Room Dynamics and Team Survival Tactics",
+    "autor": "Tibia Veteran Tactics",
+    "ano": 2023,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/annihilator_quest_tactics.pdf",
+    "resumo": "Análise técnica do lendário desafio do level 100 em Edron. Explica a distribuição de dano dos 6 Demons, ordem recomendada de foco de ataque, cálculo de suprimentos de vida/mana e escolha das recompensas (Demon Armor, Magic Sword, Stonecutter Axe, Present Box).",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["quests", "annihilator", "estrategia"],
+      "nivel": "intermediario",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "artigo",
+      "fonte": "tibiawiki.com.br",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "Soul War Endgame Quest & Primal Ordeal Mechanics Compendium",
+    "autor": "Tibia High-Level Research Team",
+    "ano": 2024,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/soul_war_endgame_guide.pdf",
+    "resumo": "Manual das mecânicas mais difíceis do endgame de Tibia, cobrindo o sistema de Taints acumulativos, táticas contra bosses (Goshnar's Malice, Hatred, Spite, Cruelty, Greed e Megasylvan Yselda) e atributos das armas Soul de cada vocação.",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["quests_endgame", "soul_war", "bosses_avancados"],
+      "nivel": "avancado",
+      "idioma": "en",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "manual",
+      "fonte": "tibiaqa.com",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "Wrath of the Emperor (WotE) and Zao Continent Access Guide",
+    "autor": "TibiaWiki Brasil",
+    "ano": 2023,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/wrath_of_the_emperor_guide.pdf",
+    "resumo": "Guia de progressão pelas 12 missões da Wrath of the Emperor em Zao e Muggy Plains, incluindo missões furtivas contra guardas lizares, labirinto de Muggy Plains e a batalha final na sala do Imperador Zalamon.",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["quests", "zao_access", "wote"],
+      "nivel": "intermediario",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "guia",
+      "fonte": "tibiawiki.com.br",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "Wheel of Destiny: Skill Tree, Gems and Domain Perks Manual",
+    "autor": "CipSoft GmbH & Technical Analysis",
+    "ano": 2024,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/wheel_of_destiny_manual.pdf",
+    "resumo": "Manual do sistema de evolução Wheel of Destiny introduzido no level 50+, detalhando a distribuição de pontos por nível, desbloqueio de magias passivas/ativas (Avatar, Gift of Life), gem atelier e sinergias de combate.",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["wheel_of_destiny", "progressao", "habilidades"],
+      "nivel": "avancado",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "manual",
+      "fonte": "tibia.com",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "Elite Knight Progression and Solo/Team Hunting Masterclass",
+    "autor": "Knight Academy Guild",
+    "ano": 2024,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/knight_progression_guide.pdf",
+    "resumo": "Guia de progressão do level 1 ao 500 para Knights, abordando escolha entre Sword/Axe/Club, rotações ótimas de magias de área (Exori, Exori Gran, Exori Mas), controle de caixa de monstros (box de 8), sets defensivos e gerenciamento de mana.",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["knight", "vocacoes", "guias_hunt"],
+      "nivel": "intermediario",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "guia",
+      "fonte": "tibiawiki.com.br",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "Royal Paladin Master Guide: Distance Tactics, Diamond Arrows & Charms",
+    "autor": "Tibia Paladin Strategy Hub",
+    "ano": 2024,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/paladin_master_guide.pdf",
+    "resumo": "Instruções avançadas para Paladinos, cobrindo a transição de combate single-target (Bolts) para caça em área (Diamond Arrows + Mas San / Runas de Avalanche/GFB), posicionamento tático em Team Hunt e uso do Great Spirit Potion.",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["paladin", "vocacoes", "area_damage"],
+      "nivel": "intermediario",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "guia",
+      "fonte": "tibiawiki.com.br",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "Mages Comprehensive Guide: Master Sorcerer & Elder Druid Dynamics",
+    "autor": "Arcane Academy Tibia",
+    "ano": 2024,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/mages_comprehensive_guide.pdf",
+    "resumo": "Manual unificado de magos explorando a divisão de papéis: Druids (cura de grupo via Exura Sio, Mas Res, controle com Wild Growth e dano de Gelo/Terra) vs Sorcerers (dano bruto de Fogo/Energia, debuffs de criaturas e controle com Magic Shield).",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["druid", "sorcerer", "magias", "suporte"],
+      "nivel": "intermediario",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "guia",
+      "fonte": "tibiawiki.com.br",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "Daily Bosses Mechanics: Grand Master Oberon, Drume, Scarlett Etzel and Timira",
+    "autor": "Tibia Boss Hunters Association",
+    "ano": 2024,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/daily_bosses_guide.pdf",
+    "resumo": "Guia tático para os principais chefes diários solo e de grupo do jogo, contendo respostas dos diálogos de enigma do Oberon, mecânica dos espelhos de Scarlett Etzel, mecânica dos comandantes de Drume e alavancas de Timira.",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["bosses_diarios", "oberon", "scarlett", "drume"],
+      "nivel": "intermediario",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "guia",
+      "fonte": "tibiawiki.com.br",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "Nemesis and Archfoe Boss Spawn Mechanisms and Tracking Timers",
+    "autor": "Guildstats & Tibia Analytics",
+    "ano": 2023,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/boss_spawn_mechanics.pdf",
+    "resumo": "Estudo estatístico sobre as janelas de reaparecimento de bosses raros no Tibia (Orshabaal, Ferumbras, Ghazbaran, Morgaroth, Yeti, Midnight Panther), explicando o sistema de cooldowns de mundos e monitoramento de invasões.",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["bosses_raros", "spawns", "estatisticas"],
+      "nivel": "avancado",
+      "idioma": "en",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "relatorio",
+      "fonte": "guildstats.eu",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "Tibia Spells, Rune Formulas and Cooldown Groups Reference Sheet",
+    "autor": "Tibia Research Guild",
+    "ano": 2024,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/spells_and_cooldowns_reference.pdf",
+    "resumo": "Tabela de referência técnica cobrindo todos os grupos de cooldown (Attack, Healing, Support, Crippling, Focus), custo de mana, fórmulas de escala de dano baseadas em Magic Level e level do personagem, e requisitos de soul points para criação de runas.",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["magias", "cooldowns", "formulas_dano"],
+      "nivel": "avancado",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "tabela",
+      "fonte": "tibiawiki.com.br",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "Tibia Blessings and Death Penalty Reduction Mechanics",
+    "autor": "Tibia Help & Safety Group",
+    "ano": 2023,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/blessings_mechanics.pdf",
+    "resumo": "Manual explicativo sobre o sistema de 7 bênçãos normais e 2 bênçãos PvP (Blood of the Mountain, Heart of the Mountain, Twist of Fate), detalhando o cálculo progressivo de custo por level, redução de perda de XP/skills (de 10% para 2%) e proteção de inventário.",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["blessings", "morte", "economia"],
+      "nivel": "basico",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "manual",
+      "fonte": "tibia.com",
+      "licenca": "open_access"
+    }
+  },
+  {
+    "titulo": "Tibia Houses, Guildhalls and Rent System Architecture",
+    "autor": "Tibia Real Estate Project",
+    "ano": 2023,
+    "url_pdf": "https://raw.githubusercontent.com/Giovanni-LOS/gptibia/main/docs/houses_and_guildhalls_guide.pdf",
+    "resumo": "Guia sobre o sistema imobiliário do jogo, cobrindo regras de leilão no site oficial, comandos de controle de acesso (aleta grav, aleta sio, aleta som), regras de transferências entre jogadores, pagamento automático de aluguel no banco e gestão de Guildhalls.",
+    "data_insercao": "2026-08-25T18:00:00.000Z",
+    "status": "Pendente",
+    "embedding_status": "pending",
+    "metadata": {
+      "tema": ["houses", "guildhalls", "comandos"],
+      "nivel": "basico",
+      "idioma": "pt",
+      "contexto_educacional": "tibia_mmorpg",
+      "tipo_documento": "guia",
+      "fonte": "tibiawiki.com.br",
+      "licenca": "open_access"
+    }
+  }
+]
