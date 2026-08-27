@@ -11,12 +11,12 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.1,
       "position": [
-        -180,
+        0,
         0
       ],
       "id": "telegram-trigger-gptibia",
       "name": "Telegram Trigger",
-      "webhookId": "gptibia-telegram-webhook"
+      "webhookId": "gptibia-webhook"
     },
     {
       "parameters": {
@@ -29,10 +29,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2,
       "position": [
-        100,
+        260,
         0
       ],
-      "id": "agent-telegram-gptibia",
+      "id": "agent-gptibia",
       "name": "AI Agent (GPTibia)"
     },
     {
@@ -43,17 +43,15 @@
           "mode": "list",
           "cachedResultName": "chat-latest"
         },
-        "options": {
-          "temperature": 0.3
-        }
+        "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.2,
       "position": [
-        -20,
+        160,
         220
       ],
-      "id": "openai-telegram-gptibia",
+      "id": "openai-gptibia",
       "name": "OpenAI Chat Model",
       "credentials": {
         "openAiApi": {
@@ -65,21 +63,21 @@
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "sessionKey": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
         "contextWindowLength": 10
       },
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        100,
+        300,
         220
       ],
-      "id": "memory-telegram-gptibia",
-      "name": "Chat Memory (Per User)"
+      "id": "memory-gptibia",
+      "name": "Chat Memory"
     },
     {
       "parameters": {
-        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
         "text": "={{ $json.output }}",
         "additionalFields": {
           "appendAttribution": false
@@ -88,7 +86,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        380,
+        520,
         0
       ],
       "id": "telegram-send-gptibia",
@@ -130,7 +128,7 @@
         ]
       ]
     },
-    "Chat Memory (Per User)": {
+    "Chat Memory": {
       "ai_memory": [
         [
           {
@@ -145,5 +143,9 @@
   "active": false,
   "settings": {
     "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2ef09b3ff7c0d13f07784f5a16ad0714adec809b2e8496f0ab7a6deb36f32a14"
   }
 }
