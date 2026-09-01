@@ -66,13 +66,25 @@ O **GPTibia** é um agente autônomo baseado em IA, orquestrado no **n8n**, que 
 
 ---
 
-### 📅 31 de Agosto de 2026 — Fase 2: Integração com APIs ao Vivo (TibiaData API v4)
+### 📅 01 de Setembro de 2026 — Validação em Produção da TibiaData API & Resolução de Sandbox
 
-* **Objetivo:** Adicionar ferramentas de busca dinâmica (*Tool Calling*) ao `AI Agent` para permitir que o GPTibia consulte em tempo real:
-  1. Informações de personagens (se está online, vocação, level, mortes recentes, guilda).
-  2. Informações de servidores/mundos (quantidade de players ativos, status do mundo).
-* **Mecanismo:** Uso do nó `Custom Code Tool` (`@n8n/n8n-nodes-langchain.toolcode`) executando chamadas REST em JavaScript para `https://api.tibiadata.com/v4/`.
-* **Criação deste documento mestre:** Instituição do `DEVLOG.md` como arquivo vivo de rastreabilidade de todas as etapas e decisões do projeto.
+#### 1. Diagnóstico do Erro de Sandbox no n8n
+* **Sintoma:** Ao testar no Telegram com a mensagem *"Conhece o personagem Disco Draco?"*, o bot respondeu: `a ferramenta de personagens está retornando um erro técnico ("fetch is not defined")`.
+* **Causa Raiz:** O n8n executa nós de código em uma sandbox isolada (VM2) que não expõe o `fetch` global nativo do Node.js/navegador. Além disso, a API retornou `"guild": {}` para o personagem (objeto vazio, que em JS é truthy), causando quebra ao ler `.name`.
+* **Solução Técnica Definitiva:**
+  1. Migração das chamadas de rede no `Custom Code Tool` para o helper oficial do n8n: `this.helpers.httpRequest({ method: 'GET', url: '...', json: true })`.
+  2. Tratamento defensivo de inputs (remoção automática de aspas enviadas pela LLM).
+  3. Tratamento de guildas vazias e extração correta de mortes e status.
+
+#### 2. Validação Real em Produção (Telegram)
+* A consulta ao vivo para o personagem **Disco Draco** no Telegram retornou com sucesso:
+  * **Level:** 170
+  * **Vocação:** Elite Knight
+  * **Mundo:** Ourobra (Status: Offline)
+  * **Residência:** Ankrahmun
+  * **Guilda:** Nenhuma
+  * **Mortes:** Morto no level 171 por *pirate marauder*
+* O agente demonstrou autonomia completa de *Tool Calling*, decidindo quando buscar dados ao vivo e formatando a resposta de forma clara e tática.
 
 ---
 
@@ -88,10 +100,11 @@ O **GPTibia** é um agente autônomo baseado em IA, orquestrado no **n8n**, que 
 [ AI Agent Node (GPTibia) ] ◄───► [ Chat Memory (Per User Chat ID) ]
      │                │
      ▼                ▼
-[ OpenAI Model ]   [ Tools (Ferramentas) ]
- (chat-latest)        ├── 1. TibiaData API v4 (Live Characters & Worlds)
-                      ├── 2. Vector Store RAG (20 Documentos de Quests/Bosses)
-                      └── 3. TibiaWiki-SQL (Itens e Bestiário)
+[ OpenAI Model ]   [ Tools (Ferramentas Ativas) ]
+ (chat-latest)        ├── 1. TibiaData Character Lookup (Live Status, Deaths, Guild)
+                      ├── 2. TibiaData World Status (Players Online, PvP, Location)
+                      ├── 3. Vector Store RAG (20 Documentos de Quests/Bosses) [A Implementar]
+                      └── 4. TibiaWiki-SQL (Itens e Bestiário) [A Implementar]
           │
           ▼
 [ Telegram Send Message Node ]
@@ -104,7 +117,8 @@ O **GPTibia** é um agente autônomo baseado em IA, orquestrado no **n8n**, que 
 
 ## 📋 Próximas Metas no Roadmap
 1. [x] Canal de entrada e saída no Telegram com memória contextual por usuário.
-2. [ ] Conectar nó de Tool para a `TibiaData API v4` (Live Character & World Data).
+2. [x] Conectar nó de Tool para a `TibiaData API v4` (Live Character & World Data) com `this.helpers.httpRequest`.
 3. [ ] Integrar base de conhecimento vetorial (RAG) com os 20 documentos do `base_conhecimento_gptibia.json`.
 4. [ ] Integrar banco de dados estruturado da Wiki (`tibiawiki-sql`).
 5. [ ] Configurar execução autônoma 24/7 do n8n dentro do Termux no Redmi Note 9 Pro.
+
