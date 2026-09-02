@@ -1,0 +1,14 @@
+{
+  "name": "gptibia-mcp-runtime",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pinned MCP runtime for the GPTibia TibiaWiki SQLite snapshot.",
+  "engines": {
+    "node": ">=26.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "express": "5.2.1",
+    "db-mcp": "5.0.1"
+  }
+}

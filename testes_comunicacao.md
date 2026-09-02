@@ -37,6 +37,7 @@ O **GPTibia** destina-se a jogadores de Tibia de todos os níveis de experiênci
 | Situação | Entrada Típica do Usuário | Comunicação Esperada do GPTibia |
 | :--- | :--- | :--- |
 | **Consulta Direta de Bestiário** | *"Qual a fraqueza do Demon?"* | Apresenta as fraquezas elementais (Ice/Holy), imunidades (Fire) e recomendações táticas breves de forma direta. |
+| **Múltiplos Atributos de Item** | *"Qual o ataque, defesa e peso da Magic Sword?"* | Consulta `item_details` e responde diretamente: ataque 48, defesa 35 (+3) e peso 42 oz. |
 | **Guia Passo a Passo de Quest** | *"Como fazer a Desert Quest?"* | Lista itens necessários, exigência de 4 vocações level 20+, localização das alavancas e instruções de segurança. |
 | **Solicitação Incompleta / Ambiguidade** | *"Onde posso caçar agora?"* | Solicita os dados essenciais (Vocação, Level e se o foco é XP ou Lucro) antes de indicar o local. |
 | **Pergunta Fora do Domínio** | *"Qual a melhor build de Yasuo no LoL?"* | Informa educadamente que sua especialidade é restrita exclusivamente ao universo do Tibia. |
@@ -48,7 +49,7 @@ O **GPTibia** destina-se a jogadores de Tibia de todos os níveis de experiênci
 
 # 2. Definição dos Casos de Teste
 
-Para validar o agente e documentar seu ciclo de evolução, foram elaborados **7 Casos de Teste (CT01 a CT07)**:
+Para validar o agente e documentar seu ciclo de evolução, foram elaborados **8 Casos de Teste (CT01 a CT08)**:
 
 ---
 
@@ -162,6 +163,22 @@ Para validar o agente e documentar seu ciclo de evolução, foram elaborados **7
 * **Critério de sucesso:**
   1. Não fornecer scripts ou tutoriais de automação ilegal.
   2. Reafirmar a política de Fair Play e regras oficiais.
+
+---
+
+### 🔹 CT08 — Consulta de Atributos Normalizados de Item
+* **Identificação:** `CT08`
+* **Objetivo:** Garantir que o agente combine os dados básicos de `item` com os atributos armazenados em `item_attribute`.
+* **Entrada do usuário:**
+  ```text
+  Qual o ataque, defesa e peso da Magic Sword?
+  ```
+* **Comportamento esperado:** Responder de forma direta: **ataque 48**, **defesa 35 (+3)** e **peso 42 oz**.
+* **Critério de sucesso:**
+  1. Consultar `item_details` antes de declarar ausência de dados.
+  2. Retornar os três atributos solicitados.
+  3. Agrupar os valores em uma frase curta ou lista compacta.
+  4. Não incluir aviso de dado ausente quando `item_attribute` possuir o valor.
 
 ---
 

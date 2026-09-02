@@ -1,1 +1,14 @@
 docs/n8n-docs/
+
+__pycache__/
+*.pyc
+mcp/node_modules/
+
+# Generated TibiaWiki data
+data/*.db
+data/*.db-*
+data/parsing-errors.log
+
+# Local runtime secrets and configured workflow
+.runtime/
+gptibia_telegram_workflow.local.json
