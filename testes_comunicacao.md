@@ -199,6 +199,23 @@ Para validar o agente e documentar seu ciclo de evolução, foram elaborados **8
 
 ---
 
+### 🔹 CT10 — Recuperação Obrigatória de Perigos e Recompensas da Annihilator
+* **Identificação:** `CT10`
+* **Objetivo:** Garantir que o agente invoque a Domain Tool `tibiawiki_get_quest_overview` e identifique a criatura específica `Angry Demon` e as recompensas atuais (incluindo `Annihilation Bear`), sem assumir Demons normais ou o item legado `Present` por memória estatística do modelo.
+* **Entrada do usuário:**
+  ```text
+  Os demons da Annihilator são diferentes e quais são as recompensas da quest?
+  ```
+* **Comportamento esperado:** Chamar `tibiawiki_get_quest_overview("Annihilator")`, constatar que o perigo catalogado é o **Angry Demon** (com 8.200 HP e mecânica própria de spawn na sala), e listar as recompensas atuais: **Demon Armor**, **Magic Sword**, **Stonecutter Axe** e **Annihilation Bear**.
+* **Critério de sucesso:**
+  1. Invocar obrigatoriamente `tibiawiki_get_quest_overview` (verificado via log ou traces).
+  2. Identificar e nomear explicitamente a criatura **Angry Demon**.
+  3. Listar **Annihilation Bear** como recompensa oficial atual, sem citar o legado `Present`.
+  4. Não afirmar que os Demons são comuns ou idênticos aos de respawn aberto.
+  5. Explicar a dinâmica da sala com clareza e bom senso de veterano.
+
+---
+
 # 3. Execução dos Testes, Identificação de Falhas e Ciclo de Ajustes no n8n
 
 Conforme exigido pelo método de desenvolvimento de agentes, os testes foram submetidos ao nó **AI Agent** no **n8n** em **duas rodadas iterativas**:

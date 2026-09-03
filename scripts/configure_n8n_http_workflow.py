@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Create an ignored n8n workflow with the HTTP API URL and token injected."""
+"""Create an ignored n8n workflow with HTTP API URLs and token injected."""
 
 from __future__ import annotations
 
@@ -9,12 +9,6 @@ import json
 import os
 from pathlib import Path
 from urllib.parse import urlparse
-
-
-API_URL_PLACEHOLDER = "__TIBIAWIKI_API_URL__"
-API_TOKEN_PLACEHOLDER = "__TIBIAWIKI_API_TOKEN__"
-TOOL_NODE_NAME = "TibiaWiki - HTTP SQL"
-KNOWLEDGE_NODE_NAME = "Baixar Tibia Knowledge"
 
 
 def parse_args() -> argparse.Namespace:
@@ -49,51 +43,23 @@ def main() -> int:
     if len(token) < 32:
         raise SystemExit("The API token must contain at least 32 characters.")
 
-    workflow = json.loads(args.template.read_text(encoding="utf-8"))
-    tool_node = next(
-        (node for node in workflow["nodes"] if node.get("name") == TOOL_NODE_NAME),
-        None,
-    )
-    if tool_node is None:
-        raise SystemExit(f"Node not found in template: {TOOL_NODE_NAME}")
-    knowledge_node = next(
-        (node for node in workflow["nodes"] if node.get("name") == KNOWLEDGE_NODE_NAME),
-        None,
-    )
-    if knowledge_node is None:
-        raise SystemExit(f"Node not found in template: {KNOWLEDGE_NODE_NAME}")
-
-    code = tool_node["parameters"]["jsCode"]
-    if API_URL_PLACEHOLDER not in code or API_TOKEN_PLACEHOLDER not in code:
-        raise SystemExit("The workflow template does not contain the expected placeholders.")
-
     base_url = args.api_url.rstrip("/")
-    if base_url.endswith("/v1/query"):
-        base_url = base_url.removesuffix("/v1/query")
-    endpoint = f"{base_url}/v1/query"
-    tool_node["parameters"]["jsCode"] = code.replace(
-        API_URL_PLACEHOLDER,
-        endpoint,
-    ).replace(API_TOKEN_PLACEHOLDER, token)
+    for suffix in ("/v1/query", "/v1/quest", "/v1/creature", "/v1/item", "/v1/knowledge"):
+        if base_url.endswith(suffix):
+            base_url = base_url.removesuffix(suffix)
+            break
 
-    knowledge_url = knowledge_node["parameters"].get("url", "")
-    header_parameters = knowledge_node["parameters"].get("headerParameters", {}).get(
-        "parameters", []
+    raw_template = args.template.read_text(encoding="utf-8")
+    replaced = (
+        raw_template.replace("__TIBIAWIKI_QUEST_URL__", f"{base_url}/v1/quest")
+        .replace("__TIBIAWIKI_CREATURE_URL__", f"{base_url}/v1/creature")
+        .replace("__TIBIAWIKI_ITEM_URL__", f"{base_url}/v1/item")
+        .replace("__TIBIAWIKI_API_URL__", f"{base_url}/v1/query")
+        .replace("__TIBIAWIKI_KNOWLEDGE_URL__", f"{base_url}/v1/knowledge")
+        .replace("__TIBIAWIKI_API_TOKEN__", token)
     )
-    authorization_header = next(
-        (header for header in header_parameters if header.get("name") == "Authorization"),
-        None,
-    )
-    if "__TIBIAWIKI_KNOWLEDGE_URL__" not in knowledge_url or authorization_header is None:
-        raise SystemExit("The knowledge node does not contain the expected placeholders.")
-    knowledge_node["parameters"]["url"] = knowledge_url.replace(
-        "__TIBIAWIKI_KNOWLEDGE_URL__",
-        f"{base_url}/v1/knowledge",
-    )
-    authorization_header["value"] = authorization_header["value"].replace(
-        API_TOKEN_PLACEHOLDER,
-        token,
-    )
+
+    workflow = json.loads(replaced)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     temporary_output = args.output.with_suffix(f"{args.output.suffix}.tmp")

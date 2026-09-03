@@ -181,6 +181,39 @@ O **GPTibia** é um agente autônomo baseado em IA, orquestrado no **n8n**, que 
 
 ---
 
+### 📅 02 de Setembro de 2026 — Arquitetura de Ferramentas de Domínio, Resolução de Entidades e Governança Factual
+
+#### 1. Diagnóstico do Caso Annihilator (Falha de Tool Calling)
+* **Problema observado:** Ao ser questionado se os monstros da Annihilator eram diferentes e quais as recompensas, o agente respondeu de memória estatística que eram Demons normais e citou o item legado `Present`. Só corrigiu para `Angry Demon` após ser provocado nominalmente.
+* **Causa raiz:** Falha de decisão de Tool Calling e excesso de permissividade no prompt ("usar livremente o conhecimento próprio"). O snapshot continha `quest_danger` apontando para `Angry Demon` e `quest_reward` apontando para `Annihilation Bear`. O modelo cometeu "preguiça de consulta" e usou a memória desatualizada do pré-treinamento.
+* **Princípio de arquitetura:**
+  * **Fontes externas determinam os FATOS:** Nomes de monstros, itens existentes, recompensas atuais, atributos numéricos e relações.
+  * **O Modelo determina a EXPLICAÇÃO:** Contexto tático, estratégia, organização didática e linguagem natural.
+
+#### 2. Domain Tools Dedicadas na API HTTP
+* **Solução escalável:** Em vez de depender de Text-to-SQL genérico ou criar views ad-hoc para cada pergunta, foram criados endpoints especializados em `scripts/tibiawiki_http_api.py`:
+  1. `POST /v1/quest` (`get_quest_overview`): Resolve o nome da quest e retorna requisitos, localização, perigos (`quest_danger`) e recompensas (`quest_reward`) em 1 único payload.
+  2. `POST /v1/creature` (`get_creature_profile`): Resolve criaturas e retorna HP, XP, armor, modificadores elementais, top drops com chances (`creature_drop`) e quests associadas.
+  3. `POST /v1/item` (`get_item_details`): Resolve itens via `item_details` combinados com ofertas de NPCs (`npc_offer_buy` e `npc_offer_sell`) e quests de origem.
+  4. `POST /v1/query`: Mantido como fallback para consultas analíticas complexas.
+
+#### 3. Resolução Inteligente de Entidades
+* Resolução em cascata: correspondência exata em `title` → correspondência exata em `name` → prefixos canônicos (`The {name} Quest`) → correspondência parcial com ordenação por tamanho.
+* Envelope padronizado: `{ entity, match_type, candidates, data, snapshot_timestamp }`.
+
+#### 4. Observabilidade e Auditoria Correlacionada
+* Adicionado log estruturado em `.runtime/api_access.log` registrando: `request_id` (UUID), `timestamp` (ISO), `endpoint`, `duration_ms`, `status_code`, `arguments` sanitizados, `entity_resolved`, `match_type` e `result_count`.
+* Trava estrita de segurança: Bearer tokens e credenciais nunca são persistidos em disco.
+
+#### 5. Integração no n8n e Governança no Prompt
+* O template `gptibia_telegram_workflow.json` agora possui 19 nós, com 4 Code Tools individuais conectados ao `AI Agent`.
+* `scripts/configure_n8n_http_workflow.py` injeta URLs específicas e tokens de forma atômica.
+* System Message atualizado com contrato estrito: proibição de inferências negativas ("não existe") sem consulta prévia da Domain Tool.
+* Novo caso de teste `CT10` adicionado à documentação de testes.
+* Suíte ampliada para 13 testes unitários automatizados passando com 100% de sucesso.
+
+---
+
 ## 🛠️ Arquitetura Atual do Sistema
 
 ```
@@ -197,7 +230,10 @@ O **GPTibia** é um agente autônomo baseado em IA, orquestrado no **n8n**, que 
  (chat-latest)        ├── 1. TibiaData Character Lookup (Live Status, Deaths, Guild)
                       ├── 2. TibiaData World Status (Players Online, PvP, Location)
                       ├── 3. Tibia Knowledge RAG (2.590 docs + OpenAI Embeddings)
-                      └── 4. TibiaWiki-SQL via HTTP Tool (API e túnel validados)
+                      ├── 4. TibiaWiki Quest Overview (POST /v1/quest)
+                      ├── 5. TibiaWiki Creature Profile (POST /v1/creature)
+                      ├── 6. TibiaWiki Item Details (POST /v1/item)
+                      └── 7. TibiaWiki SQL Query Fallback (POST /v1/query)
           │
           ▼
 [ Telegram Send Message Node ]
