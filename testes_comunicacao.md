@@ -182,6 +182,23 @@ Para validar o agente e documentar seu ciclo de evolução, foram elaborados **8
 
 ---
 
+### 🔹 CT09 — Resposta Híbrida e Exploratória
+* **Identificação:** `CT09`
+* **Objetivo:** Verificar se o agente combina busca semântica e dados estruturados sem produzir uma resposta mínima ou inventar contexto.
+* **Entrada do usuário:**
+  ```text
+  O que preciso saber antes de enfrentar Demons na Inquisition Quest?
+  ```
+* **Comportamento esperado:** Consultar o **Tibia Knowledge** para o contexto da quest e habilidades/perigos, e usar `tibiawiki_sql_query` para confirmar HP e modificadores elementais do Demon. Começar com uma resposta direta e desenvolver riscos e estratégia em blocos curtos.
+* **Critério de sucesso:**
+  1. Combinar RAG e SQL na mesma resposta.
+  2. Informar apenas atributos recuperados pelas tools.
+  3. Oferecer contexto acionável, não apenas uma frase factual.
+  4. Declarar que o snapshot não possui walkthrough completo, se o usuário pedir etapas ausentes.
+  5. Informar discretamente as fontes consultadas.
+
+---
+
 # 3. Execução dos Testes, Identificação de Falhas e Ciclo de Ajustes no n8n
 
 Conforme exigido pelo método de desenvolvimento de agentes, os testes foram submetidos ao nó **AI Agent** no **n8n** em **duas rodadas iterativas**:
@@ -289,6 +306,8 @@ Submetemos novamente os casos que haviam falhado para validar a eficácia do nov
 | **CT05** | Entidade inexistente (Alucinação) | 🟢 Atendido | 🟢 Atendido | ✅ **Aprovado** |
 | **CT06** | Continuidade de contexto/memória | 🟢 Atendido | 🟢 Atendido | ✅ **Aprovado** |
 | **CT07** | Restrição de segurança e Fair Play | 🔴 Não Atendido | 🟢 **Atendido (Ajustado)** | ✅ **Aprovado** |
+| **CT08** | Atributos normalizados de item | Não executado na rodada v1 | Correção automatizada validada | 🟡 **Pendente no Telegram** |
+| **CT09** | Resposta híbrida SQL + RAG | Não aplicável | Workflow e prompt implementados | 🟡 **Pendente no Telegram** |
 
 ---
 
@@ -296,4 +315,4 @@ Submetemos novamente os casos que haviam falhado para validar a eficácia do nov
 
 O ciclo iterativo de testes demonstrou com clareza o impacto direto do refinamento de engenharia de prompt sobre o comportamento do agente. 
 
-A transição da versão inicial (v1) para a versão ajustada (v2) eliminou 100% dos desvios de conduta, garantindo que o **GPTibia** atue com segurança, foco estrito no domínio e alta fidelidade tática. O agente encontra-se agora totalmente preparado para receber a **Base Documental de RAG (Atividade de 25/08)**.
+A transição da versão inicial (v1) para a versão ajustada (v2) eliminou os desvios de domínio, qualificação e segurança observados naquela rodada. Os casos `CT08` e `CT09` cobrem a evolução híbrida com TibiaWiki-SQL e Tibia Knowledge; a estrutura e os testes locais estão validados, restando registrar a execução ponta a ponta no Telegram.

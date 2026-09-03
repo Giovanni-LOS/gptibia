@@ -8,6 +8,8 @@ mcp/node_modules/
 data/*.db
 data/*.db-*
 data/parsing-errors.log
+data/rag_knowledge.json
+data/.rag_knowledge.*
 
 # Local runtime secrets and configured workflow
 .runtime/

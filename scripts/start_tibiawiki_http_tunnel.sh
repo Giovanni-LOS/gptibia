@@ -16,5 +16,5 @@ if ! curl --fail --silent "http://127.0.0.1:$PORT/health" >/dev/null; then
 fi
 
 echo "Starting an ephemeral HTTPS tunnel to http://127.0.0.1:$PORT"
-echo "Use the generated https://*.trycloudflare.com URL with /v1/query."
+echo "Use the generated https://*.trycloudflare.com URL to configure query and RAG ingestion."
 exec cloudflared tunnel --no-autoupdate --url "http://127.0.0.1:$PORT"

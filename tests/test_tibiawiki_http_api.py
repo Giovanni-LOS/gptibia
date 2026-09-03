@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sqlite3
 import tempfile
 import unittest
@@ -56,6 +57,29 @@ class TibiaWikiHTTPAPITest(unittest.TestCase):
         result = API.execute_read_query(self.database, query)
         self.assertEqual(result["count"], API.MAX_ROWS)
         self.assertTrue(result["truncated"])
+
+    def test_load_knowledge_payload_validates_documents(self) -> None:
+        knowledge_path = Path(self.temporary_directory.name) / "knowledge.json"
+        knowledge_path.write_text(
+            json.dumps(
+                {
+                    "document_count": 1,
+                    "documents": [{"id": "quest:1", "text": "Real quest data"}],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        payload = API.load_knowledge_payload(knowledge_path)
+
+        self.assertEqual(payload["document_count"], 1)
+
+    def test_invalid_knowledge_payload_is_rejected(self) -> None:
+        knowledge_path = Path(self.temporary_directory.name) / "knowledge.json"
+        knowledge_path.write_text('{"documents": [{"text": ""}]}', encoding="utf-8")
+
+        with self.assertRaises(API.KnowledgeUnavailable):
+            API.load_knowledge_payload(knowledge_path)
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@
 | --- | --- | --- | --- |
 | TibiaData v4 | Personagens, mortes, status de mundos e guildas | Consulta em tempo real | Integrado |
 | TibiaWiki-SQL | Itens, criaturas, loot, NPCs, spells, imbuements e metadados de quests | Snapshot periódico | Gerado e validado |
-| RAG documental | Walkthroughs, lore, puzzles e mecânicas narrativas | Ingestão de fontes reais | A reconstruir |
+| Tibia Knowledge RAG | Busca semântica em quests, criaturas, spells e imbuements | Snapshot + OpenAI Embeddings | Integrado no workflow |
 
 TibiaData e TibiaWiki são serviços comunitários. Dados oficiais devem ser atribuídos à CipSoft apenas quando a fonte for `tibia.com`.
 
@@ -24,7 +24,7 @@ Gerar ou atualizar o snapshot:
 ./scripts/update_tibiawiki_db.sh
 ```
 
-O processo usa um arquivo temporário. `data/tibiawiki.db` só é substituído depois que o gerador termina, o `PRAGMA quick_check` retorna `ok` e todas as tabelas essenciais possuem dados.
+O processo usa arquivos temporários. `data/tibiawiki.db` e `data/rag_knowledge.json` só são publicados depois que o gerador termina, o `PRAGMA quick_check` retorna `ok`, todas as tabelas essenciais possuem dados e o corpus RAG é exportado.
 
 Antes da validação, `scripts/create_tibiawiki_views.py` recria a view `item_details`. Ela não duplica dados e oferece uma interface estável para o agente, mesmo que os atributos continuem normalizados em `item_attribute`.
 
@@ -58,6 +58,7 @@ A API oferece:
 
 * `GET http://127.0.0.1:8080/health`, sem autenticação.
 * `POST http://127.0.0.1:8080/v1/query`, com Bearer token obrigatório.
+* `GET http://127.0.0.1:8080/v1/knowledge`, com Bearer token obrigatório.
 
 O endpoint de consulta aceita somente um `SELECT`, abre o banco em `mode=ro`, ativa `query_only`, usa o authorizer do SQLite, limita a resposta a 20 linhas e interrompe consultas que excedam o tempo configurado.
 
@@ -75,6 +76,28 @@ Use a URL HTTPS exibida para gerar o workflow importável:
 ```
 
 Importe `gptibia_telegram_workflow.local.json`. O template versionado mantém placeholders e não contém o token. Quick Tunnels são efêmeros e não possuem garantia de disponibilidade; para uso contínuo, configure um túnel nomeado ou hospede a API em um serviço HTTPS controlado.
+
+## Tibia Knowledge e OpenAI Embeddings
+
+`scripts/export_rag_knowledge.py` converte os registros reais do snapshot em documentos textuais com `id`, `text` e metadados de proveniência. O corpus atual contém:
+
+| Entidade | Documentos | Uso principal |
+| --- | ---: | --- |
+| Criaturas | 1.957 | Busca por perfil, local, elementos e habilidades |
+| Quests | 366 | Contexto, requisitos, perigos e recompensas |
+| Spells | 195 | Descoberta por efeito, vocação e palavras mágicas |
+| Imbuements | 72 | Descoberta por efeito, slot e materiais |
+
+O workflow implementa os dois caminhos usados na Aula 3:
+
+1. **Ingestão:** `Atualizar Tibia Knowledge` baixa o corpus, cria chunks de 1.200 caracteres com sobreposição de 180, gera OpenAI Embeddings e insere no Vector Store.
+2. **Recuperação:** `Tibia Knowledge - RAG` usa a mesma chave de memória e outro nó OpenAI Embeddings, sendo entregue ao AI Agent como tool semântica com `topK = 6`.
+
+Depois de importar o workflow, execute manualmente **Atualizar Tibia Knowledge** antes de testar o bot. Os dois nós de embeddings devem usar a mesma credencial OpenAI.
+
+O `Simple Vector Store` é adequado para a demonstração acadêmica, mas mantém os vetores na memória do processo. Os dados precisam ser ingeridos novamente após reiniciar o n8n e não devem conter informação sensível. Para operação persistente, a evolução recomendada é trocar apenas a implementação do store por PGVector, Qdrant ou outro backend compatível, preservando o exportador e a separação híbrida.
+
+O corpus não cria informação que o SQLite não possui. Em especial, os documentos de quests contêm contexto, requisitos, perigos e recompensas, mas não um walkthrough completo. A ingestão de páginas narrativas reais continua sendo uma extensão futura.
 
 ## Compatibilidade MCP SSE
 
@@ -125,6 +148,7 @@ Essa variante concluiu handshake, listagem de tools e consulta local. Pelo Cloud
 
 1. Usar TibiaData para informações que mudam em tempo real.
 2. Usar a tool HTTP SQLite para números, filtros e relações estruturadas.
-3. Usar o RAG apenas quando a pergunta exigir texto narrativo ou instruções de quest.
-4. Nunca tratar o resultado de uma tool como infalível; respostas vazias e erros de parsing devem ser informados.
-5. Não executar comandos de escrita, DDL ou múltiplas instruções SQL.
+3. Usar o Tibia Knowledge para busca semântica, contexto e explicações; nunca como substituto de filtros ou cálculos SQL.
+4. Combinar SQL e RAG quando a pergunta misturar fatos exatos com estratégia ou contexto.
+5. Nunca tratar o resultado de uma tool como infalível; respostas vazias e erros de parsing devem ser informados.
+6. Não executar comandos de escrita, DDL ou múltiplas instruções SQL.

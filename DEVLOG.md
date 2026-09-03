@@ -142,6 +142,45 @@ O **GPTibia** é um agente autônomo baseado em IA, orquestrado no **n8n**, que 
 
 ---
 
+### 📅 02 de Setembro de 2026 — Integração do Tibia Knowledge RAG e Respostas Híbridas
+
+#### 1. Recuperação do Vector Store da Aula 3
+* **Diagnóstico:** O workflow HTTP funcional continha TibiaData, SQLite e o modelo OpenAI, mas o ramo de ingestão e recuperação vetorial do exemplo `Aula_3.json` não havia sido transportado para o projeto.
+* **Decisão:** Adotar arquitetura híbrida, sem substituir SQL por embeddings:
+  1. TibiaData para personagens e mundos em tempo real.
+  2. TibiaWiki-SQL para atributos, números, filtros, loot e relações exatas.
+  3. Tibia Knowledge com OpenAI Embeddings para busca semântica, contexto e explicações.
+* **Motivo:** Similaridade vetorial ajuda a localizar contexto, mas não é uma fonte adequada para cálculos ou filtros numéricos. O agente deve combinar RAG e SQL quando uma pergunta exigir os dois tipos de informação.
+
+#### 2. Corpus Real Gerado do TibiaWiki-SQL
+* **Exportador criado:** `scripts/export_rag_knowledge.py` lê o snapshot em modo somente leitura e gera `data/rag_knowledge.json` com texto, identificador e metadados de proveniência por documento.
+* **Cobertura gerada:** 2.590 documentos, sendo 1.957 criaturas, 366 quests, 195 spells e 72 imbuements.
+* **Conteúdo:** Quests incluem contexto, requisitos, perigos e recompensas; criaturas incluem perfil, modificadores elementais, locais e habilidades; spells e imbuements incluem seus efeitos e requisitos relevantes.
+* **Atualização atômica:** `scripts/update_tibiawiki_db.sh` agora exporta e publica o corpus junto com o banco validado, reduzindo o risco de o RAG usar uma versão diferente do SQLite.
+* **Limite preservado:** Como o snapshot não contém o walkthrough completo das quests, o corpus não afirma possuir etapas que não existem na fonte.
+
+#### 3. Ingestão e Recuperação no n8n
+* **Ramo de ingestão:** `Atualizar Tibia Knowledge` → download autenticado → preparação de chunks de 1.200 caracteres com overlap de 180 → OpenAI Embeddings → Vector Store em modo `insert`.
+* **Ramo do agente:** Outro Simple Vector Store usa a mesma chave `gptibia_tibia_knowledge_v1`, modo `retrieve-as-tool`, `topK = 6` e um nó OpenAI Embeddings para a consulta.
+* **Credenciais:** Os nós de embeddings reutilizam a credencial OpenAI já configurada no workflow. URL e Bearer token continuam sendo injetados somente em `gptibia_telegram_workflow.local.json`.
+* **API ampliada:** `GET /v1/knowledge` publica o corpus somente com autenticação. O health check informa a quantidade de documentos disponíveis.
+* **Limitação operacional:** O Simple Vector Store da versão acadêmica do n8n mantém os vetores em memória. O ramo de ingestão deve ser executado novamente após reiniciar o n8n; persistência externa permanece como evolução futura.
+
+#### 4. Refinamento da Profundidade das Respostas
+* **Problema observado:** A regra de objetividade favorecia respostas mínimas, mesmo quando contexto adicional ajudaria o jogador.
+* **Prompt revisado:** O agente agora começa pela resposta direta, entrega todos os campos solicitados e adiciona de uma a três observações úteis em consultas factuais. Perguntas abertas devem incluir estratégia, requisitos, riscos e limites da fonte em blocos curtos.
+* **Roteamento explícito:** O prompt determina quando usar TibiaData, SQL, RAG ou uma combinação, e pede uma indicação discreta das fontes consultadas.
+* **Novo caso de teste:** `CT09` valida uma resposta sobre Demons na Inquisition Quest combinando contexto semântico com HP e modificadores elementais confirmados por SQL.
+
+#### 5. Verificação desta Etapa
+* O corpus local foi gerado com 2.590 documentos e aproximadamente 1,9 MB.
+* O endpoint retornou `200` autenticado, expôs as quatro contagens esperadas e retornou `401` sem token.
+* O template resultante contém 16 nós, com chaves iguais nos stores de ingestão e recuperação e conexões `ai_embedding`, `ai_document` e `ai_tool` consistentes com o exemplo da Aula 3.
+* Oito testes automatizados passaram, além de `py_compile`, validação Bash, validação JSON e `git diff --check`.
+* **Pendente externo:** Executar o ramo manual no n8n da faculdade e registrar os resultados dos casos `CT08` e `CT09` no Telegram.
+
+---
+
 ## 🛠️ Arquitetura Atual do Sistema
 
 ```
@@ -157,7 +196,7 @@ O **GPTibia** é um agente autônomo baseado em IA, orquestrado no **n8n**, que 
 [ OpenAI Model ]   [ Tools (Ferramentas Ativas) ]
  (chat-latest)        ├── 1. TibiaData Character Lookup (Live Status, Deaths, Guild)
                       ├── 2. TibiaData World Status (Players Online, PvP, Location)
-                      ├── 3. Vector Store RAG (Fontes Reais de Quests/Bosses) [A Implementar]
+                      ├── 3. Tibia Knowledge RAG (2.590 docs + OpenAI Embeddings)
                       └── 4. TibiaWiki-SQL via HTTP Tool (API e túnel validados)
           │
           ▼
@@ -172,7 +211,7 @@ O **GPTibia** é um agente autônomo baseado em IA, orquestrado no **n8n**, que 
 ## 📋 Próximas Metas no Roadmap
 1. [x] Canal de entrada e saída no Telegram com memória contextual por usuário.
 2. [x] Conectar nó de Tool para a `TibiaData API v4` (Live Character & World Data) com `this.helpers.httpRequest`.
-3. [ ] Reconstruir o RAG somente com documentos ou páginas reais e verificáveis.
+3. [x] Reconstruir o RAG com documentos reais derivados do snapshot e metadados de proveniência.
 4. [x] Gerar e validar o banco estruturado da Wiki (`tibiawiki-sql`).
 5. [x] Expor o SQLite por API HTTP autenticada e manter MCP SSE como alternativa.
 6. [ ] Importar `gptibia_telegram_workflow.local.json` no n8n e validar pelo Telegram.

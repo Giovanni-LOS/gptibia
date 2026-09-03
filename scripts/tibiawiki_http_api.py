@@ -37,6 +37,10 @@ class QueryRejected(ValueError):
     """Raised when a query violates the read-only API contract."""
 
 
+class KnowledgeUnavailable(RuntimeError):
+    """Raised when the generated RAG corpus is missing or invalid."""
+
+
 def normalize_query(query: Any) -> str:
     if not isinstance(query, str):
         raise QueryRejected("The query field must be a string.")
@@ -109,6 +113,23 @@ def execute_read_query(database_path: Path, raw_query: Any) -> dict[str, Any]:
     }
 
 
+def load_knowledge_payload(knowledge_path: Path) -> dict[str, Any]:
+    try:
+        payload = json.loads(knowledge_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise KnowledgeUnavailable(f"Knowledge corpus unavailable: {error}") from error
+
+    documents = payload.get("documents") if isinstance(payload, dict) else None
+    if not isinstance(documents, list) or not all(
+        isinstance(document, dict)
+        and isinstance(document.get("text"), str)
+        and document.get("text")
+        for document in documents
+    ):
+        raise KnowledgeUnavailable("Knowledge corpus has an invalid document structure.")
+    return payload
+
+
 class TibiaWikiRequestHandler(BaseHTTPRequestHandler):
     server_version = "GPTibiaHTTP/1.0"
 
@@ -117,18 +138,37 @@ class TibiaWikiRequestHandler(BaseHTTPRequestHandler):
         return self.server  # type: ignore[return-value]
 
     def do_GET(self) -> None:
-        if self.path != "/health":
-            self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not found."})
+        if self.path == "/v1/knowledge":
+            if not self._is_authorized():
+                self._send_json(HTTPStatus.UNAUTHORIZED, {"error": "Unauthorized."})
+                return
+            try:
+                payload = load_knowledge_payload(self.application.knowledge_path)
+            except KnowledgeUnavailable as error:
+                self._send_json(HTTPStatus.SERVICE_UNAVAILABLE, {"error": str(error)})
+                return
+            self._send_json(HTTPStatus.OK, payload)
             return
 
-        self._send_json(
-            HTTPStatus.OK,
-            {
-                "status": "healthy",
-                "service": "tibiawiki-http-api",
-                "database": self.application.database_path.name,
-            },
-        )
+        if self.path == "/health":
+            try:
+                document_count = load_knowledge_payload(
+                    self.application.knowledge_path
+                ).get("document_count", 0)
+            except KnowledgeUnavailable:
+                document_count = 0
+            self._send_json(
+                HTTPStatus.OK,
+                {
+                    "status": "healthy",
+                    "service": "tibiawiki-http-api",
+                    "database": self.application.database_path.name,
+                    "knowledge_documents": document_count,
+                },
+            )
+            return
+
+        self._send_json(HTTPStatus.NOT_FOUND, {"error": "Not found."})
 
     def do_POST(self) -> None:
         if self.path != "/v1/query":
@@ -198,10 +238,12 @@ class TibiaWikiHTTPServer(ThreadingHTTPServer):
         self,
         address: tuple[str, int],
         database_path: Path,
+        knowledge_path: Path,
         api_token: str,
     ) -> None:
         super().__init__(address, TibiaWikiRequestHandler)
         self.database_path = database_path
+        self.knowledge_path = knowledge_path
         self.api_token = api_token
 
 
@@ -228,6 +270,11 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=project_root / ".runtime" / "tibiawiki_api_token",
     )
+    parser.add_argument(
+        "--knowledge",
+        type=Path,
+        default=project_root / "data" / "rag_knowledge.json",
+    )
     parser.add_argument("--host", default=os.environ.get("TIBIAWIKI_API_HOST", "127.0.0.1"))
     parser.add_argument(
         "--port",
@@ -246,9 +293,11 @@ def main() -> int:
     server = TibiaWikiHTTPServer(
         (args.host, args.port),
         args.database.resolve(),
+        args.knowledge.resolve(),
         read_api_token(args.token_file),
     )
     print(f"TibiaWiki HTTP API: http://{args.host}:{args.port}/v1/query")
+    print(f"RAG knowledge:      http://{args.host}:{args.port}/v1/knowledge")
     print(f"Health check:       http://{args.host}:{args.port}/health")
     try:
         server.serve_forever()

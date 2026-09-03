@@ -41,10 +41,13 @@ flowchart TD
 
 ## ⚡ 3. Principais Funcionalidades e Integrações
 
-### 📖 1. Base RAG de Quests e Mecânicas (em reconstrução)
-* O catálogo inicial de PDFs foi retirado do pipeline porque parte dos arquivos referenciados não existia.
-* A nova base utilizará apenas páginas ou documentos reais, verificáveis e com URL de origem.
-* O RAG será usado para walkthroughs, lore, mecânicas de bosses e outros conteúdos narrativos que não existem no SQLite.
+### 📖 1. Tibia Knowledge: RAG com OpenAI Embeddings
+* O catálogo inicial de PDFs foi retirado porque parte dos arquivos referenciados não existia.
+* `scripts/export_rag_knowledge.py` transforma o snapshot real do TibiaWiki-SQL em um corpus semântico com proveniência e metadados.
+* O corpus atual possui 2.590 documentos: 1.957 criaturas, 366 quests, 195 spells e 72 imbuements.
+* O workflow segue o padrão da Aula 3: um Simple Vector Store para ingestão, outro em `retrieve-as-tool` e OpenAI Embeddings nos dois caminhos.
+* O RAG oferece contexto e descoberta semântica. O SQLite continua sendo a autoridade para números, filtros e relações exatas.
+* A tabela de quests não inclui walkthrough completo; portanto, o corpus atual também não deve ser apresentado como guia passo a passo completo.
 
 ### 🗄️ 2. Integração com a Base TibiaWiki ([tibiawiki-sql](https://github.com/Galarzaa90/tibiawiki-sql))
 * Snapshot SQLite gerado a partir da API comunitária da TibiaWiki e validado localmente.
@@ -87,12 +90,12 @@ flowchart TD
 * **Base Estruturada:** [tibiawiki-sql](https://github.com/Galarzaa90/tibiawiki-sql) 9.0.0 (SQLite)
 * **Integração da Base:** API HTTP stateless autenticada; MCP SSE disponível como alternativa
 * **API de Dados Dinâmicos:** [TibiaData API v4](https://docs.tibiadata.com/)
-* **Formatos de Base:** SQLite para dados estruturados; HTML, Markdown ou PDF reais para RAG
+* **Formatos de Base:** SQLite para dados estruturados; JSON documental gerado do snapshot para RAG
 
 ### Execução local da base estruturada
 
 ```bash
-./scripts/update_tibiawiki_db.sh
+./scripts/update_tibiawiki_db.sh # atualiza SQLite e data/rag_knowledge.json
 ./scripts/start_tibiawiki_http_api.sh
 ./scripts/start_tibiawiki_http_tunnel.sh
 ```
@@ -103,11 +106,20 @@ Depois que o túnel exibir a URL HTTPS, gere o workflow local com as credenciais
 ./scripts/configure_n8n_http_workflow.py --api-url https://SEU-TUNEL.trycloudflare.com
 ```
 
-Importe `gptibia_telegram_workflow.local.json` no n8n. O arquivo contém um token e é ignorado pelo Git. Consulte [docs/ARQUITETURA_DADOS.md](docs/ARQUITETURA_DADOS.md) para os controles de segurança, as limitações do túnel e a alternativa MCP SSE.
+Importe `gptibia_telegram_workflow.local.json` no n8n e execute manualmente o ramo **Atualizar Tibia Knowledge** uma vez. O arquivo contém um token e é ignorado pelo Git.
+
+O Simple Vector Store do n8n é volátil: repita a ingestão após reiniciar o n8n. Consulte [docs/ARQUITETURA_DADOS.md](docs/ARQUITETURA_DADOS.md) para os controles de segurança, a divisão de responsabilidade das fontes e a alternativa MCP SSE.
 
 ---
 
 ## 💬 6. Exemplos de Interação com o GPTibia
+
+```text
+Usuário: Qual o ataque, defesa e peso da Magic Sword?
+GPTibia: A Magic Sword possui 48 de ataque, 35 de defesa com modificador +3 e pesa 42 oz.
+Como contexto, é uma sword de uma mão, requer level 80 e aceita dois imbuements.
+Fonte consultada: TibiaWiki-SQL.
+```
 
 ```text
 Usuário: Qual a fraqueza elemental do Demon e que set de Knight você recomenda pra caçar em Goroma?
