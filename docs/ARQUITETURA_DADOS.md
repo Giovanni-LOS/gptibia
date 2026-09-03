@@ -57,10 +57,15 @@ O launcher cria dois arquivos locais ignorados pelo Git:
 A API oferece:
 
 * `GET http://127.0.0.1:8080/health`, sem autenticação.
-* `POST http://127.0.0.1:8080/v1/query`, com Bearer token obrigatório.
-* `GET http://127.0.0.1:8080/v1/knowledge`, com Bearer token obrigatório.
+* `POST http://127.0.0.1:8080/v1/quest`, com Bearer token obrigatório (Domain Tool de quests com resolução fuzzy, `quest_danger` e `quest_reward`).
+* `POST http://127.0.0.1:8080/v1/creature`, com Bearer token obrigatório (Domain Tool de criaturas com fraquezas elementais, `creature_drop` e quests associadas).
+* `POST http://127.0.0.1:8080/v1/item`, com Bearer token obrigatório (Domain Tool de itens com `item_details`, `required_level` e preços em `npc_offer_buy`/`sell`).
+* `POST http://127.0.0.1:8080/v1/query`, com Bearer token obrigatório (fallback de leitura SQL livre).
+* `GET http://127.0.0.1:8080/v1/knowledge`, com Bearer token obrigatório (corpus RAG de 2.590 documentos).
 
-O endpoint de consulta aceita somente um `SELECT`, abre o banco em `mode=ro`, ativa `query_only`, usa o authorizer do SQLite, limita a resposta a 20 linhas e interrompe consultas que excedam o tempo configurado.
+As chamadas são auditadas em `.runtime/api_access.log` em formato JSON estruturado (`request_id`, `endpoint`, `duration_ms`, `arguments` sanitizados, `entity_resolved`, `match_type`), sem registrar tokens.
+
+O endpoint de consulta livre aceita somente um `SELECT`, abre o banco em `mode=ro`, ativa `query_only`, usa o authorizer do SQLite, limita a resposta a 20 linhas e interrompe consultas que excedam o tempo configurado.
 
 Como o n8n da faculdade está em outra máquina, `127.0.0.1` no workflow apontaria para o servidor da faculdade. Para um teste, publique a API:
 

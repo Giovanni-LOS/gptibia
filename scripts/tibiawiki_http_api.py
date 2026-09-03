@@ -3,14 +3,15 @@
 """Authenticated, read-only HTTP API for the TibiaWiki SQLite snapshot.
 
 Includes raw SQL execution, RAG knowledge serving, and dedicated domain
-tools for quests, creatures, and items with intelligent name resolution
-and correlated audit logging.
+tools for quests, creatures, and items with intelligent name resolution,
+fuzzy typo matching, and correlated audit logging.
 """
 
 from __future__ import annotations
 
 import argparse
 import datetime
+import difflib
 import hmac
 import json
 import os
@@ -46,10 +47,6 @@ class QueryRejected(ValueError):
 
 class KnowledgeUnavailable(RuntimeError):
     """Raised when the generated RAG corpus is missing or invalid."""
-
-
-class EntityNotFound(ValueError):
-    """Raised when a requested entity does not exist."""
 
 
 def normalize_query(query: Any) -> str:
@@ -102,6 +99,19 @@ def _connect_ro(database_path: Path) -> sqlite3.Connection:
     return connection
 
 
+def get_snapshot_timestamp(connection: sqlite3.Connection) -> str | None:
+    """Read generation timestamp from database_info."""
+    try:
+        row = connection.execute(
+            "SELECT value FROM database_info WHERE key = 'generate_time'"
+        ).fetchone()
+        if row and row["value"]:
+            return str(row["value"])
+    except sqlite3.Error:
+        pass
+    return None
+
+
 def execute_read_query(database_path: Path, raw_query: Any) -> dict[str, Any]:
     query = normalize_query(raw_query)
     deadline = time.monotonic() + QUERY_TIMEOUT_SECONDS
@@ -129,16 +139,26 @@ def execute_read_query(database_path: Path, raw_query: Any) -> dict[str, Any]:
     }
 
 
+def _clean_for_fuzzy(text: str, table: str) -> str:
+    s = text.lower().strip()
+    if table == "quest":
+        if s.startswith("the "):
+            s = s[4:]
+        if s.endswith(" quest"):
+            s = s[:-6]
+    return s
+
+
 def resolve_entity(
     connection: sqlite3.Connection,
     table: str,
     raw_name: Any,
 ) -> tuple[str, dict[str, Any] | None, list[str]]:
-    """Resolve an entity in a given table by exact, canonical, or partial match.
+    """Resolve an entity in a given table by exact, canonical, partial, or fuzzy match.
 
     Returns:
         (match_type, matched_row_dict_or_None, list_of_candidate_titles)
-        match_type can be: 'exact', 'partial', 'ambiguous', or 'not_found'.
+        match_type can be: 'exact', 'partial', 'fuzzy', 'ambiguous', or 'not_found'.
     """
     if not isinstance(raw_name, str) or not raw_name.strip():
         return "not_found", None, []
@@ -163,7 +183,7 @@ def resolve_entity(
     if len(rows) == 1:
         return "exact", dict(rows[0]), []
 
-    # 3. Canonical prefixes for quests
+    # 3. Canonical prefixes/suffixes for quests
     if table == "quest":
         cur = connection.execute(
             "SELECT * FROM quest WHERE title = ? COLLATE NOCASE",
@@ -190,26 +210,49 @@ def resolve_entity(
     if len(like_rows) == 1:
         return "partial", dict(like_rows[0]), []
     elif len(like_rows) > 1:
-        # Check if one of them is exact case-insensitive match
         for r in like_rows:
             if r["title"].lower() == name.lower():
                 return "exact", dict(r), []
         return "ambiguous", None, [r["title"] for r in like_rows[:6]]
 
-    return "not_found", None, []
+    # 5. Fuzzy match for typos (SequenceMatcher)
+    all_rows = connection.execute(f"SELECT * FROM {table}").fetchall()
+    q_clean = _clean_for_fuzzy(name, table)
+    scored: list[tuple[float, sqlite3.Row]] = []
+    for r in all_rows:
+        t_clean = _clean_for_fuzzy(r["title"], table)
+        n_clean = _clean_for_fuzzy(r["name"] or "", table)
+        ratio = max(
+            difflib.SequenceMatcher(None, q_clean, t_clean).ratio(),
+            difflib.SequenceMatcher(None, q_clean, n_clean).ratio(),
+        )
+        if ratio >= 0.65:
+            scored.append((ratio, r))
+
+    scored.sort(key=lambda x: x[0], reverse=True)
+    if not scored:
+        return "not_found", None, []
+
+    if len(scored) == 1 or (scored[0][0] - scored[1][0] >= 0.08):
+        return "fuzzy", dict(scored[0][1]), [s[1]["title"] for s in scored[:5]]
+
+    return "ambiguous", None, [s[1]["title"] for s in scored[:6]]
 
 
 def get_quest_overview(database_path: Path, raw_name: Any) -> dict[str, Any]:
     """Fetch structured quest overview with dangers and rewards."""
     with closing(_connect_ro(database_path)) as connection:
         match_type, quest, candidates = resolve_entity(connection, "quest", raw_name)
+        snapshot_time = get_snapshot_timestamp(connection)
+
         if quest is None:
             return {
                 "entity": raw_name if isinstance(raw_name, str) else "",
                 "match_type": match_type,
                 "candidates": candidates,
                 "data": None,
-                "snapshot_timestamp": None,
+                "snapshot_timestamp": snapshot_time,
+                "article_timestamp": None,
             }
 
         quest_id = quest["article_id"]
@@ -251,7 +294,8 @@ def get_quest_overview(database_path: Path, raw_name: Any) -> dict[str, Any]:
                 "dangers": [dict(d) for d in dangers],
                 "rewards": [r["name"] for r in rewards],
             },
-            "snapshot_timestamp": quest.get("timestamp"),
+            "snapshot_timestamp": snapshot_time,
+            "article_timestamp": quest.get("timestamp"),
         }
 
 
@@ -259,13 +303,16 @@ def get_creature_profile(database_path: Path, raw_name: Any) -> dict[str, Any]:
     """Fetch structured creature profile with elemental modifiers, drops, and quests."""
     with closing(_connect_ro(database_path)) as connection:
         match_type, creature, candidates = resolve_entity(connection, "creature", raw_name)
+        snapshot_time = get_snapshot_timestamp(connection)
+
         if creature is None:
             return {
                 "entity": raw_name if isinstance(raw_name, str) else "",
                 "match_type": match_type,
                 "candidates": candidates,
                 "data": None,
-                "snapshot_timestamp": None,
+                "snapshot_timestamp": snapshot_time,
+                "article_timestamp": None,
             }
 
         creature_id = creature["article_id"]
@@ -318,7 +365,8 @@ def get_creature_profile(database_path: Path, raw_name: Any) -> dict[str, Any]:
                 "top_drops": [dict(d) for d in drops],
                 "associated_quests": [q["quest"] for q in quests],
             },
-            "snapshot_timestamp": creature.get("timestamp"),
+            "snapshot_timestamp": snapshot_time,
+            "article_timestamp": creature.get("timestamp"),
         }
 
 
@@ -326,13 +374,16 @@ def get_item_details(database_path: Path, raw_name: Any) -> dict[str, Any]:
     """Fetch structured item details combining item, attributes, NPC buyers, and sellers."""
     with closing(_connect_ro(database_path)) as connection:
         match_type, item, candidates = resolve_entity(connection, "item", raw_name)
+        snapshot_time = get_snapshot_timestamp(connection)
+
         if item is None:
             return {
                 "entity": raw_name if isinstance(raw_name, str) else "",
                 "match_type": match_type,
                 "candidates": candidates,
                 "data": None,
-                "snapshot_timestamp": None,
+                "snapshot_timestamp": snapshot_time,
+                "article_timestamp": None,
             }
 
         item_id = item["article_id"]
@@ -389,6 +440,9 @@ def get_item_details(database_path: Path, raw_name: Any) -> dict[str, Any]:
             (item_id,),
         ).fetchall()
 
+        # Note: view defines required_level, fallback to level_required
+        required_level = details.get("required_level") or details.get("level_required")
+
         return {
             "entity": item["title"],
             "match_type": match_type,
@@ -403,13 +457,14 @@ def get_item_details(database_path: Path, raw_name: Any) -> dict[str, Any]:
                 "weight": details.get("weight"),
                 "item_class": details.get("item_class"),
                 "item_type": details.get("item_type"),
-                "level_required": details.get("level_required"),
+                "level_required": required_level,
                 "imbuement_slots": details.get("imbuement_slots"),
                 "npc_buyers": [dict(b) for b in buyers],
                 "npc_sellers": [dict(s) for s in sellers],
                 "reward_from_quests": [q["quest"] for q in reward_quests],
             },
-            "snapshot_timestamp": item.get("timestamp"),
+            "snapshot_timestamp": snapshot_time,
+            "article_timestamp": item.get("timestamp"),
         }
 
 

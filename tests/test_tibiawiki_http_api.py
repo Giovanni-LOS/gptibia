@@ -26,6 +26,21 @@ class TibiaWikiHTTPAPITest(unittest.TestCase):
             # Create core tables
             connection.execute(
                 """
+                CREATE TABLE database_info (
+                    key TEXT,
+                    value TEXT
+                )
+                """
+            )
+            connection.execute(
+                """
+                INSERT INTO database_info VALUES
+                ('generate_time', '2026-09-01T20:17:14.418357+00:00'),
+                ('version', '9.0.0')
+                """
+            )
+            connection.execute(
+                """
                 CREATE TABLE creature (
                     article_id INTEGER PRIMARY KEY,
                     title TEXT,
@@ -86,6 +101,7 @@ class TibiaWikiHTTPAPITest(unittest.TestCase):
                 )
                 """
             )
+            # Match real production view (create_tibiawiki_views.py: required_level)
             connection.execute(
                 """
                 CREATE VIEW item_details AS
@@ -101,14 +117,14 @@ class TibiaWikiHTTPAPITest(unittest.TestCase):
                     def.value AS defense,
                     def_mod.value AS defense_modifier,
                     arm.value AS armor,
-                    req.value AS level_required,
+                    req.value AS required_level,
                     slots.value AS imbuement_slots
                 FROM item i
                 LEFT JOIN item_attribute att ON att.item_id = i.article_id AND att.name = 'attack'
                 LEFT JOIN item_attribute def ON def.item_id = i.article_id AND def.name = 'defense'
                 LEFT JOIN item_attribute def_mod ON def_mod.item_id = i.article_id AND def_mod.name = 'defense_modifier'
                 LEFT JOIN item_attribute arm ON arm.item_id = i.article_id AND arm.name = 'armor'
-                LEFT JOIN item_attribute req ON req.item_id = i.article_id AND req.name = 'level_required'
+                LEFT JOIN item_attribute req ON req.item_id = i.article_id AND req.name = 'required_level'
                 LEFT JOIN item_attribute slots ON slots.item_id = i.article_id AND slots.name = 'imbuement_slots'
                 """
             )
@@ -174,21 +190,21 @@ class TibiaWikiHTTPAPITest(unittest.TestCase):
             connection.execute(
                 """
                 INSERT INTO quest VALUES
-                (2520, 'The Annihilator Quest', 'the annihilator quest', 'Edron Hero Cave.', 100, 130, 1, 'Log text', 'Legend', '2026-09-01')
+                (2520, 'The Annihilator Quest', 'the annihilator quest', 'Edron Hero Cave.', 100, 130, 1, 'Log text', 'Legend', '2025-02-11T11:04:54+00:00')
                 """
             )
             connection.execute(
                 """
                 INSERT INTO creature VALUES
-                (1176, 'Demon', 'demon', 8200, 6000, 44, 1.0, 110, 'Demons', 'Hell', 75, 60, 0, 112, 50, 80, 112, '2026-09-01'),
-                (1500, 'Angry Demon', 'angry demon', 8200, 6000, 40, 1.0, 120, 'Demons', 'Annihilator Room', 75, 60, 0, 112, 50, 80, 112, '2026-09-01')
+                (1176, 'Demon', 'demon', 8200, 6000, 44, 1.0, 110, 'Demons', 'Hell', 75, 60, 0, 112, 50, 80, 112, '2025-02-11T11:04:54+00:00'),
+                (1500, 'Angry Demon', 'angry demon', 8200, 6000, 40, 1.0, 120, 'Demons', 'Annihilator Room', 75, 60, 0, 112, 50, 80, 112, '2025-02-11T11:04:54+00:00')
                 """
             )
             connection.execute(
                 """
                 INSERT INTO item VALUES
-                (101, 'Magic Sword', 'magic sword', 42.0, 'Weapons', 'Sword', '2026-09-01'),
-                (102, 'Annihilation Bear', 'annihilation bear', 4.5, 'Other', 'Doll', '2026-09-01')
+                (101, 'Magic Sword', 'magic sword', 42.0, 'Weapons', 'Sword', '2025-12-08T14:27:08+00:00'),
+                (102, 'Annihilation Bear', 'annihilation bear', 4.5, 'Other', 'Doll', '2025-12-08T14:27:08+00:00')
                 """
             )
             connection.executemany(
@@ -197,7 +213,7 @@ class TibiaWikiHTTPAPITest(unittest.TestCase):
                     (101, "attack", "48"),
                     (101, "defense", "35"),
                     (101, "defense_modifier", "+3"),
-                    (101, "level_required", "80"),
+                    (101, "required_level", "80"),
                     (101, "imbuement_slots", "2"),
                 ],
             )
@@ -243,12 +259,13 @@ class TibiaWikiHTTPAPITest(unittest.TestCase):
         self.assertTrue(result["truncated"])
 
     def test_quest_overview_partial_resolution_and_relations(self) -> None:
-        # Resolving "Annihilator" should partially resolve to "The Annihilator Quest"
         result = API.get_quest_overview(self.database, "Annihilator")
         self.assertEqual(result["entity"], "The Annihilator Quest")
         self.assertEqual(result["match_type"], "partial")
         self.assertIsNotNone(result["data"])
         self.assertEqual(result["data"]["level_required"], 100)
+        self.assertEqual(result["snapshot_timestamp"], "2026-09-01T20:17:14.418357+00:00")
+        self.assertEqual(result["article_timestamp"], "2025-02-11T11:04:54+00:00")
 
         # Danger must include Angry Demon
         dangers = [d["name"] for d in result["data"]["dangers"]]
@@ -258,6 +275,15 @@ class TibiaWikiHTTPAPITest(unittest.TestCase):
         rewards = result["data"]["rewards"]
         self.assertIn("Magic Sword", rewards)
         self.assertIn("Annihilation Bear", rewards)
+
+    def test_quest_overview_fuzzy_resolution_for_typo(self) -> None:
+        # Resolving "anihillation" typo from chat log
+        result = API.get_quest_overview(self.database, "anihillation")
+        self.assertEqual(result["entity"], "The Annihilator Quest")
+        self.assertEqual(result["match_type"], "fuzzy")
+        self.assertIsNotNone(result["data"])
+        self.assertIn("Angry Demon", [d["name"] for d in result["data"]["dangers"]])
+        self.assertIn("Annihilation Bear", result["data"]["rewards"])
 
     def test_quest_overview_not_found(self) -> None:
         result = API.get_quest_overview(self.database, "NonExistentQuestXYZ")
@@ -277,7 +303,7 @@ class TibiaWikiHTTPAPITest(unittest.TestCase):
         drops = [d["item"] for d in result["data"]["top_drops"]]
         self.assertIn("Magic Sword", drops)
 
-    def test_item_details_magic_sword_with_npc_and_quest(self) -> None:
+    def test_item_details_magic_sword_with_required_level_and_npc(self) -> None:
         result = API.get_item_details(self.database, "Magic Sword")
         self.assertEqual(result["entity"], "Magic Sword")
         self.assertEqual(result["match_type"], "exact")
@@ -285,6 +311,7 @@ class TibiaWikiHTTPAPITest(unittest.TestCase):
         self.assertEqual(result["data"]["attack"], "48")
         self.assertEqual(result["data"]["defense"], "35")
         self.assertEqual(result["data"]["defense_modifier"], "+3")
+        self.assertEqual(result["data"]["level_required"], "80")
         self.assertEqual(result["data"]["weight"], 42.0)
 
         # Economic relations (H.L. buying in Venore for 350 gp)
